@@ -28,7 +28,7 @@ void explicit_step(vector<double>& data,
 void implicit_step(vector<double>& data, 
         size_t start, size_t n, double r, double boundA, double boundB)
 {
-    //shoild produce x_{i+1} in
+    //should produce x_{i+1} in
     // A_imp x_{i+1} = x_i + boundary vector
     //If space has J nodes, A_imp is (J-2) x(J-2)
     // x are column vectors of size (J-2)
@@ -50,10 +50,10 @@ void implicit_step(vector<double>& data,
     std::vector<double> prevV(data.begin()+start+1, data.begin()+start+n-1);
     prevV[0] += boundA;
     prevV[n-2] += boundB; 
-    std::vector<double> nextV = solveEqn(A, prevV);
+    std::vector<double> nextV = solveEqnTridiagonal(A, prevV);
 
     size_t end = start+n-1;
-    //first and last are boundary and given   
+    //first and last are boundary and the given   
     //start and end are for the initial vector 
     for(size_t i = 1; i < n-1; ++i)
     {
@@ -66,9 +66,9 @@ stepperfunctype explicitstepper = explicit_step;
 
 class discretepde
 {
-    //based on heat equation as in Hirsa
+    //based on heat equation as in H
     //use a method to convert general parabolic into heat as
-    //in Capinski-Zastwaniak
+    //in CZ
 protected:    
     size_t I; //time: 0,1,   ..., I
     size_t J; //space: 0,1,...,J
