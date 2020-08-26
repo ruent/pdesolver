@@ -65,10 +65,8 @@ void implicit_step(vector<double>& data,
 stepperfunctype explicitstepper = explicit_step; 
 
 class discretepde
-{
-    //based on heat equation as in H
-    //use a method to convert general parabolic into heat as
-    //in CZ
+{    
+    //see my notes to the code
 protected:    
     size_t I; //time: 0,1,   ..., I
     size_t J; //space: 0,1,...,J
@@ -100,6 +98,47 @@ public:
     {
         return &grid[time*J];
     }    
+};
+
+
+class pydiscretepde: public discretepde{
+    public:
+        //inherit constructors
+        using discretepde::discretepde;
+    double upperboundary(double i) override {
+        PYBIND11_OVERLOAD_PURE(
+            double, //return type
+            discretepde, //parent class
+            upperboundary, //function name in C++
+            i   //function argument
+        );
+    }   
+    double lowerboundary(double i) override {
+        PYBIND11_OVERLOAD_PURE(
+            double, //return type
+            discretepde, //parent class
+            lowerboundary, //function name in C++
+            i   //function argument
+        );
+    }  
+    void initialvalue() override {
+        PYBIND11_OVERLOAD_PURE(
+            void, //return type
+            discretepde, //parent class
+            initialvalue //function name in C++
+        );
+    }   
+    void do_step(std::vector<double>& data, 
+        size_t start, size_t n, double r) override {
+            PYBIND11_OVERLOAD_PURE(
+                void,
+                discretepde,
+                do_step,
+                data, start, n, r
+            );
+        }
+ 
+
 };
 
 //can templetize over products whose boundary values
