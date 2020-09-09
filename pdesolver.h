@@ -1,6 +1,11 @@
 #pragma once
 #include<vector>
 #include<functional>
+
+
+//start with the heat-like PDE: u_t = s u_xx
+//Assume time step size a, space step size b
+//Then  r below is just  (s*a)/(b*b)
  
 using stepperfunctype = std::function<void(vector<double>&, 
                  size_t, size_t, double, double, double)>;
@@ -15,6 +20,7 @@ void explicit_step(vector<double>& data,
     //from the given vector starting at the given index
     //assume start_index+n and start_index+2n-1 are known
     //boundary conditions
+    //r is a parameter for the underlying PDE
 
     size_t end = start+n-1;
     //first and last are boundary and given   
@@ -64,21 +70,26 @@ void implicit_step(vector<double>& data,
 //a generalized pointer (Gottschling, 1st edition, p.205)
 stepperfunctype explicitstepper = explicit_step; 
 
+//the parameter r could be templatized to allow for
+//simple constant values but probabaly it is better
+// a non-template version where parameter is always a vector.
+//Let it be time-dependent only, so a vector over the time axis.
+
 class discretepde
 {    
     //see my notes to the code
 protected:    
-    size_t I; //time: 0,1,   ..., I
+    size_t I; //time: 0,1,   ..., I (number of time steps)
     size_t J; //space: 0,1,...,J
-    float Idelta = 0.001; //time increment
-    //assuming V_t = 0.5 V_xx is the eqn
+    float Idelta = 0.02; //time increment = 0.02 approx 1 week
+    //assuming V_t = 0.5 V_xx is the eqn //space increment > sqrt(Idelta*2*r)
     //Idelta and Jdelta give a stable configuration
-    //see my notes...
+    //see my notes... (assume r is always at most 1)
     float Jdelta = 0.1; //space increment
     float Izero = 0.0; //initial time point
     float Jzero; //initial space point
     vector<double> grid; //initial vector and one iterate
-    double r; //r is rho from LGM model (...)
+    double r; //r is passed to the stepper, look there for the meaning
     stepperfunctype stepper;
 
 public:
@@ -141,26 +152,29 @@ class pydiscretepde: public discretepde{
 
 };
 
-//can templetize over products whose boundary values
+//can templatize over products whose boundary values
 //can be calculated
 class lgmpde: public discretepde
 {
     public:
     lgmpde(size_t _I, size_t _J, double _r, 
-        stepperfunctype _stepper, float _Jzero): 
+        stepperfunctype _stepper, float _Jzero, variancemap alphaSqr): 
         discretepde(_I,_J, _r, _stepper, _Jzero)
     {
         //1 week = 7/365, time step size, so T= 7/365 * I
         //space = 0.01, so total space interval is 0.01* J
         initialvalue();
+        double r_time;
         for (size_t i=0; i<I; ++i)
         {
             //fill in the boundary values
             grid[i*J] = lowerboundary(i * Idelta);
             grid[i*J+J-1] = upperboundary(i* Idelta);
             //initial value (or final)
-            
-            do_step(grid, i*J, J, r);
+            r_time = 0.5*alphaSqr(i*Idelta); 
+            //i-th time step while time increment is Idelta
+            //see variancemap definition for alphaSqr
+            do_step(grid, i*J, J, r_time);
         }
     }
     //you should bring the LGM swaption prices here 
