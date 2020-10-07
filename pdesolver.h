@@ -1,6 +1,7 @@
 #pragma once
 #include<vector>
 #include<functional>
+//#include "lgmarkov/model.h"
 
 
 //start with the heat-like PDE: u_t = s u_xx
