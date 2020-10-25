@@ -112,7 +112,7 @@ public:
     }    
 };
 
-
+/*
 class pydiscretepde: public discretepde{
     public:
         //inherit constructors
@@ -152,7 +152,7 @@ class pydiscretepde: public discretepde{
  
 
 };
-
+*/
 //can templatize over products whose boundary values
 //can be calculated
 class lgmpde: public discretepde
